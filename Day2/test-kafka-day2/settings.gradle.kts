@@ -1,0 +1,1 @@
+rootProject.name = "test-kafka-day2"
