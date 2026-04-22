@@ -1,13 +1,13 @@
-package in.codefarm.order.service.as.producer;
+package in.codefarm.notification.service.as.consumer;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class OrderServiceAsProducerApplication {
+public class NotificationServiceAsConsumerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(OrderServiceAsProducerApplication.class, args);
+		SpringApplication.run(NotificationServiceAsConsumerApplication.class, args);
 	}
 
 }
