@@ -39,7 +39,7 @@ public class PaymentServiceConsumer {
     }
 
     @KafkaListener(
-            topics = {"orders", ""},
+            topics = {"orders"},
             groupId = "payment-service-group",
             containerFactory = "eventWrapperKafkaListenerContainerFactory"
     )
@@ -50,7 +50,7 @@ public class PaymentServiceConsumer {
 
             // Only process OrderPlaced events, ignore OrderCancelled events
             if (!"OrderPlaced".equals(eventType)) {
-                log.debug("Payment Service: Ignoring event type: {} - only processing OrderPlaced events", eventType);
+                log.info("Payment Service: Ignoring event type: {} - only processing OrderPlaced events", eventType);
                 return;
             }
 

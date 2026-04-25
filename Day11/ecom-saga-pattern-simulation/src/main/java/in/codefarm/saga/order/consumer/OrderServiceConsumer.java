@@ -36,7 +36,7 @@ public class OrderServiceConsumer {
     }
     
     @KafkaListener(
-        topics = "payments",
+        topics = {"payments"},
         groupId = "order-service-compensation-group",
         containerFactory = "eventWrapperKafkaListenerContainerFactory"
     )
