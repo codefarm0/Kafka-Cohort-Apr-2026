@@ -1,0 +1,20 @@
+FROM confluentinc/cp-kafka-connect:7.6.0
+
+# Install the file connector plugin and JDBC connector
+USER root
+
+# Create directory for file connector
+RUN mkdir -p /usr/share/confluent-hub-components/kafka-connect-file
+
+# Download Apache Kafka 3.6.0 and extract file connector JARs
+RUN curl -L -o /tmp/kafka.tgz https://archive.apache.org/dist/kafka/3.6.0/kafka_2.13-3.6.0.tgz && \
+    tar -xzf /tmp/kafka.tgz -C /tmp && \
+    cp /tmp/kafka_2.13-3.6.0/libs/connect-file-*.jar /usr/share/confluent-hub-components/kafka-connect-file/ && \
+    rm -rf /tmp/kafka_2.13-3.6.0 /tmp/kafka.tgz && \
+    chown -R appuser:appuser /usr/share/confluent-hub-components/kafka-connect-file
+
+# Install JDBC connector from Confluent Hub
+RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.7.4
+
+USER appuser
+

@@ -1,0 +1,17 @@
+{
+  "name": "jdbc-source-orders-ts-incr",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": "1",
+    "connection.url": "jdbc:postgresql://postgres:5432/ecommerce_db",
+    "connection.user": "kafka_user",
+    "connection.password": "kafka_password",
+    "table.whitelist": "orders",
+    "mode": "timestamp+incrementing",
+    "timestamp.column.name": "updated_at",
+    "incrementing.column.name": "order_id",
+    "topic.prefix": "db-ts-incr-",
+    "poll.interval.ms": "5000",
+    "batch.max.rows": "100"
+  }
+}

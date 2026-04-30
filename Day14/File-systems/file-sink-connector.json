@@ -1,0 +1,9 @@
+{
+    "name": "file-sink-connector",
+    "config": {
+      "connector.class": "org.apache.kafka.connect.file.FileStreamSinkConnector",
+      "tasks.max": "1",
+      "topics": "products-topic",
+      "file": "/destination-files/products-output.csv"
+    }
+  }

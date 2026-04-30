@@ -1,0 +1,19 @@
+{
+  "name": "jdbc-sink-orders-warehouse",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "connection.url": "jdbc:postgresql://postgres:5432/ecommerce_db",
+    "connection.user": "kafka_user",
+    "connection.password": "kafka_password",
+    "topics": "db-orders",
+    "table.name.format": "orders_warehouse",
+    "insert.mode": "insert",
+    "pk.mode": "record_value",
+    "pk.fields": "order_id",
+    "batch.size": "100",
+    "auto.create": "false",
+    "auto.evolve": "false"
+  }
+}
+

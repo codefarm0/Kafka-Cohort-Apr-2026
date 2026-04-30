@@ -1,0 +1,19 @@
+FROM confluentinc/cp-kafka-connect:7.6.0
+
+# Install the file connector plugin
+# The file connectors are part of Apache Kafka distribution
+USER root
+
+# Create directory for file connector
+RUN mkdir -p /usr/share/confluent-hub-components/kafka-connect-file
+
+# Download Apache Kafka 3.6.0 (compatible with Confluent 7.6.0) and extract file connector JARs
+# curl, tar, and gzip should already be available in the base image
+RUN curl -L -o /tmp/kafka.tgz https://archive.apache.org/dist/kafka/3.6.0/kafka_2.13-3.6.0.tgz && \
+    tar -xzf /tmp/kafka.tgz -C /tmp && \
+    cp /tmp/kafka_2.13-3.6.0/libs/connect-file-*.jar /usr/share/confluent-hub-components/kafka-connect-file/ && \
+    rm -rf /tmp/kafka_2.13-3.6.0 /tmp/kafka.tgz && \
+    chown -R appuser:appuser /usr/share/confluent-hub-components/kafka-connect-file
+
+USER appuser
+

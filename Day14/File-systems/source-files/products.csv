@@ -1,0 +1,21 @@
+product_id,product_name,category,price,stock_quantity,description,supplier,rating,created_date
+1001,Wireless Mouse,Electronics,29.99,150,Ergonomic wireless mouse with 2.4GHz connectivity,TechSupplies Inc,4.5,2024-01-15
+1002,Mechanical Keyboard,Electronics,89.99,75,Cherry MX switches with RGB backlighting,TechSupplies Inc,4.7,2024-01-16
+1003,USB-C Hub,Electronics,45.99,200,7-in-1 USB-C hub with HDMI and SD card reader,GlobalTech,4.3,2024-01-17
+1004,Standing Desk,Office Furniture,299.99,50,Adjustable height standing desk with memory presets,OfficePro,4.6,2024-01-18
+1005,Monitor Stand,Office Furniture,79.99,120,Aluminum monitor stand with cable management,OfficePro,4.4,2024-01-19
+1006,Webcam HD,Electronics,59.99,90,1080p HD webcam with auto-focus and noise cancellation,TechSupplies Inc,4.5,2024-01-20
+1007,Desk Lamp,Office Furniture,34.99,180,LED desk lamp with adjustable brightness and color temperature,HomeOffice,4.2,2024-01-21
+1008,USB Flash Drive 64GB,Electronics,12.99,300,USB 3.0 flash drive with 64GB storage capacity,GlobalTech,4.6,2024-01-22
+1009,Wireless Headphones,Electronics,129.99,60,Noise-cancelling wireless headphones with 30-hour battery,AudioTech,4.8,2024-01-23
+1010,Desk Organizer,Office Furniture,24.99,250,Multi-compartment desk organizer with pen holders,HomeOffice,4.1,2024-01-24
+1001,Wireless Mouse,Electronics,29.99,150,Ergonomic wireless mouse with 2.4GHz connectivity,TechSupplies Inc,4.5,2024-01-15
+1002,Mechanical Keyboard,Electronics,89.99,75,Cherry MX switches with RGB backlighting,TechSupplies Inc,4.7,2024-01-16
+1003,USB-C Hub,Electronics,45.99,200,7-in-1 USB-C hub with HDMI and SD card reader,GlobalTech,4.3,2024-01-17
+1004,Standing Desk,Office Furniture,299.99,50,Adjustable height standing desk with memory presets,OfficePro,4.6,2024-01-18
+1005,Monitor Stand,Office Furniture,79.99,120,Aluminum monitor stand with cable management,OfficePro,4.4,2024-01-19
+1006,Webcam HD,Electronics,59.99,90,1080p HD webcam with auto-focus and noise cancellation,TechSupplies Inc,4.5,2024-01-20
+1007,Desk Lamp,Office Furniture,34.99,180,LED desk lamp with adjustable brightness and color temperature,HomeOffice,4.2,2024-01-21
+1008,USB Flash Drive 64GB,Electronics,12.99,300,USB 3.0 flash drive with 64GB storage capacity,GlobalTech,4.6,2024-01-22
+1009,Wireless Headphones,Electronics,129.99,60,Noise-cancelling wireless headphones with 30-hour battery,AudioTech,4.8,2024-01-23
+1010,Desk Organizer,Office Furniture,24.99,250,Multi-compartment desk organizer with pen holders,HomeOffice,4.1,2024-01-24
