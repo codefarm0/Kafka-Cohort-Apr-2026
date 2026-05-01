@@ -1,8 +1,8 @@
 services:
   broker1:
     image: apache/kafka:4.1.0
-    container_name: kafka-broker1321
-    hostname: broker123
+    container_name: kafka-broker11
+    hostname: broker1234
     ports:
       - "9092:9092"
     volumes:
@@ -45,8 +45,8 @@ services:
 
   broker2:
     image: apache/kafka:4.1.0
-    container_name: kafka-broker2
-    hostname: broker231
+    container_name: kafka-broker22
+    hostname: broker2321
     ports:
       - "9094:9094"
     volumes:
@@ -84,27 +84,47 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
 
   postgres:
-    image: postgres:15-alpine
-    container_name: postgres123
+    image: postgres:15
+    container_name: postgres121
     ports:
       - "5432:5432"
     environment:
+      POSTGRES_DB: ecommerce_db
       POSTGRES_USER: kafka_user
       POSTGRES_PASSWORD: kafka_password
-      POSTGRES_DB: ecommerce_db
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: elasticsearch121
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   kafka-connect:
     build:
       context: .
       dockerfile: Dockerfile.kafka-connect
-    container_name: kafka-connect123
+    container_name: kafka-connect1121
     depends_on:
       - broker1
       - broker2
       - postgres
+      - elasticsearch
+      - schema-registry
     ports:
       - "8083:8083"
     environment:
@@ -118,20 +138,32 @@ services:
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 2
       CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 2
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 2
-      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
-      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
-      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "true"
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_KEY_CONVERTER_SCHEMAS_ENABLE: "true"
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-      CONNECT_INTERNAL_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_INTERNAL_VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
       CONNECT_PLUGIN_PATH: /usr/share/java,/usr/share/confluent-hub-components
-    volumes:
-      - ./source-files:/source-files
-      - ./destination-files:/destination-files
 
-  kafdrop1:
-    image: obsidiandynamics/kafdrop
-    container_name: kafdrop1234
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.0
+    container_name: schema-registry1121
+    depends_on:
+      - broker1
+      - broker2
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: broker1:29092,broker2:29094
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:4.0.1
+    container_name: kafdrop1121
     ports:
       - "9000:9000"
     environment:
@@ -139,9 +171,20 @@ services:
     depends_on:
       - broker1
       - broker2
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: kibana11
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - xpack.security.enabled=false
 
 volumes:
   broker1-data:
   broker2-data:
   postgres-data:
+  elasticsearch-data:
 
