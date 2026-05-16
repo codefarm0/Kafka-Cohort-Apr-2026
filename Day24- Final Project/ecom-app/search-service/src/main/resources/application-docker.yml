@@ -1,0 +1,5 @@
+search:
+  elasticsearch:
+    url: http://elasticsearch:9200
+    index: mysql-product-server.product_db.products
+    debezium-envelope: true

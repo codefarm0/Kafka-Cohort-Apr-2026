@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Resolves io.confluent:kafka-connect-elasticsearch + runtime JARs from Confluent's
+  public Maven repo (no Confluent Hub API — avoids 401/404 on hub archive URLs).
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>local.ecom</groupId>
+  <artifactId>kafka-connect-es-fetch</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.confluent</groupId>
+      <artifactId>kafka-connect-elasticsearch</artifactId>
+      <version>14.0.3</version>
+    </dependency>
+  </dependencies>
+
+  <repositories>
+    <repository>
+      <id>confluent</id>
+      <url>https://packages.confluent.io/maven/</url>
+    </repository>
+    <repository>
+      <id>central</id>
+      <url>https://repo1.maven.org/maven2/</url>
+    </repository>
+  </repositories>
+</project>

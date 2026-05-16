@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: search-service
+
+server:
+  port: 8085
+
+search:
+  elasticsearch:
+    url: http://localhost:9200
+    # Confluent ES sink 14.x uses the Kafka topic name (lowercased) as the index name — see deploy-elasticsearch-sink-connector.sh
+    index: mysql-product-server.product_db.products
+    # _source documents are Debezium envelopes: row columns are under "after"
+    debezium-envelope: true
+
+logging:
+  level:
+    in.codefarm.search_service: DEBUG

@@ -1,0 +1,315 @@
+services:
+  # Kafka (KRaft mode - no Zookeeper needed)
+  kafka:
+    image: apache/kafka:4.1.1
+    container_name: kafka11
+    hostname: kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      # Listeners: INTERNAL for container-to-container, EXTERNAL for host-to-container
+      KAFKA_LISTENERS: >
+        INTERNAL://0.0.0.0:29092,
+        EXTERNAL://0.0.0.0:9092,
+        CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: >
+        INTERNAL://kafka:29092,
+        EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: >
+        INTERNAL:PLAINTEXT,
+        EXTERNAL:PLAINTEXT,
+        CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    user: root
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MySQL for Order Service
+  order-db:
+    image: mysql:8.0
+    container_name: order-db1
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: order_db
+      MYSQL_USER: debezium
+      MYSQL_PASSWORD: debezium
+    command: 
+      - --server-id=1
+      - --log-bin=mysql-bin
+      - --binlog-format=ROW
+      - --binlog-row-image=FULL
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - order-db-data:/var/lib/mysql
+      - ./scripts/init-order-db.sql:/docker-entrypoint-initdb.d/init-order-db.sql:ro
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MySQL for Payment Service
+  payment-db:
+    image: mysql:9.5.0
+    container_name: payment-db1
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: payment_db
+      MYSQL_USER: payment_user
+      MYSQL_PASSWORD: payment_password
+    command: 
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - payment-db-data:/var/lib/mysql
+      - ./scripts/init-payment-db.sql:/docker-entrypoint-initdb.d/init-payment-db.sql:ro
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MySQL for Product Service (catalog + stock) — binlog for Debezium CDC
+  product-db:
+    image: mysql:8.0
+    container_name: product-db
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: product_db
+      MYSQL_USER: debezium
+      MYSQL_PASSWORD: debezium
+    command:
+      - --server-id=2
+      - --log-bin=mysql-bin
+      - --binlog-format=ROW
+      - --binlog-row-image=FULL
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - product-db-data:/var/lib/mysql
+      - ./scripts/init-product-db.sql:/docker-entrypoint-initdb.d/init-product-db.sql:ro
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.4
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health | grep -q '\"status\"'"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.4
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+
+  # MySQL for Shipping Service
+  shipping-db:
+    image: mysql:9.5.0
+    container_name: shipping-db1
+    ports:
+      - "3309:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: shipping_db
+      MYSQL_USER: shipping_user
+      MYSQL_PASSWORD: shipping_password
+    command: 
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - shipping-db-data:/var/lib/mysql
+      - ./scripts/init-shipping-db.sql:/docker-entrypoint-initdb.d/init-shipping-db.sql:ro
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MySQL for Notification Service
+  notification-db:
+    image: mysql:9.5.0
+    container_name: notification-db1
+    ports:
+      - "3310:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: notification_db
+      MYSQL_USER: notification_user
+      MYSQL_PASSWORD: notification_password
+    command: 
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - notification-db-data:/var/lib/mysql
+      - ./scripts/init-notification-db.sql:/docker-entrypoint-initdb.d/init-notification-db.sql:ro
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kafka Connect: Debezium + Elasticsearch sink (custom image)
+  kafka-connect:
+    build:
+      context: ./docker/kafka-connect
+    image: ecom-kafka-connect:local
+    container_name: kafka-connect11
+    ports:
+      - "8083:8083"
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: connect_configs
+      OFFSET_STORAGE_TOPIC: connect_offsets
+      STATUS_STORAGE_TOPIC: connect_statuses
+      CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      STATUS_STORAGE_REPLICATION_FACTOR: 1
+      # Scripting JAR symlinks are created under /kafka/connect/scripts at startup — do not mount host ./scripts there (shadows image + read-only breaks ln).
+      ENABLE_DEBEZIUM_SCRIPTING: "true"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      order-db:
+        condition: service_healthy
+      product-db:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/connectors"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
+  # Redis - reservation (1 min TTL) and idempotency keys for Order, Payment, Delivery, Notification
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Mailpit — free OSS SMTP sink + web UI (no paid provider). Dev: http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - ecommerce-network
+
+  # Kafdrop - Kafka UI
+  kafdrop:
+    image: obsidiandynamics/kafdrop:4.2.0
+    container_name: kafdrop11
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: kafka:29092
+      SERVER_SERVLET_CONTEXTPATH: /
+    depends_on:
+      - kafka
+    networks:
+      - ecommerce-network
+
+  # Kafka Streams aggregates + REST (LLD §3.10) — read-only consumer of existing topics
+  # streams-dashboard:
+  #   build:
+  #     context: ./streams-dashboard-service
+  #   image: ecom-streams-dashboard:local
+  #   container_name: streams-dashboard
+  #   ports:
+  #     - "8087:8087"
+  #   environment:
+  #     SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+  #   depends_on:
+  #     kafka:
+  #       condition: service_healthy
+  #   networks:
+  #     - ecommerce-network
+
+volumes:
+  kafka-data:
+  redis-data:
+  order-db-data:
+  payment-db-data:
+  product-db-data:
+  es-data:
+  shipping-db-data:
+  notification-db-data:
+
+networks:
+  ecommerce-network:
+    driver: bridge
+

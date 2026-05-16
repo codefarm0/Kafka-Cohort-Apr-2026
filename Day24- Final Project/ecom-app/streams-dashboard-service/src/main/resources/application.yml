@@ -1,0 +1,21 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: streams-dashboard-service
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    streams:
+      application-id: streams-dashboard-v1
+      bootstrap-servers: ${spring.kafka.bootstrap-servers}
+      replication-factor: 1
+      state-dir: ${KAFKA_STREAMS_STATE_DIR:${user.home}/.kafka-streams-dashboard}
+      properties:
+        auto.offset.reset: earliest
+        processing.guarantee: at_least_once
+
+logging:
+  level:
+    root: INFO
+    in.codefarm.streams_dashboard: INFO

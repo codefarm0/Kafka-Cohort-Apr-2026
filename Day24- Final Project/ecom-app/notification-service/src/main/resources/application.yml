@@ -1,0 +1,62 @@
+spring:
+  application:
+    name: notification-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3310/notification_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: rootpassword
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notification-service-group
+
+  # SMTP — free local testing: Mailpit (docker) on localhost:1025, UI http://localhost:8025
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+
+server:
+  port: 8086
+
+# All mail goes here if set (use your real address for demos). Otherwise use directory map below.
+notification:
+  mail:
+    enabled: true
+    from: orders@localhost
+    override-to: ${NOTIFICATION_OVERRIDE_TO:}
+    directory: {}
+    # Example per-customer routing (no override needed):
+    # directory:
+    #   "customer-1": "you@gmail.com"
+
+logging:
+  level:
+    root: INFO
+    in.codefarm.notification_service: DEBUG
